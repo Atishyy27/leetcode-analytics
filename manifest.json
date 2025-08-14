@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Refined LeetCode Analytics",
-  "version": "0.2.0",
+  "version": "1.1.12",
   "description": "Embeds rating-based analytics directly onto LeetCode profile pages.",
   "icons": {
     "16": "icons/icon16.png",
@@ -10,18 +10,27 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://leetcode.com/*"],
-      "js": ["content.js"],
-      "css": ["styles.css"]
+      "matches": [
+        "https://leetcode.com/*"
+      ],
+      "js": [
+        "libs/chart.min.js",
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["https://cdn.jsdelivr.net/npm/chart.js"],
-      "matches": ["https://leetcode.com/*"]
-    }
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "cookies",
+    "https://leetcode.com/*"
   ],
   "host_permissions": [
-    "https://raw.githubusercontent.com/"
+    "https://leetcode.com/*"
   ]
 }
