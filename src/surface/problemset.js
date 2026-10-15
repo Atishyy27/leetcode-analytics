@@ -30,9 +30,8 @@
 
   function annotate(table) {
     queued = false;
-    const links = document.querySelectorAll('a[href^="/problems/"]:not([data-' + "lca-rated" + '])');
+    const links = document.querySelectorAll('a[href^="/problems/"]:not([data-lca-rated])');
     for (const a of links) {
-      if (a.dataset[MARK]) continue;
       a.dataset[MARK] = "1";
 
       const m = a.getAttribute("href").match(/^\/problems\/([^/?#]+)/);
