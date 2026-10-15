@@ -1,74 +1,174 @@
-/* Main container for our analytics */
-#lc-analytics-container {
-    background-color: #1a1a1a; /* Darker background */
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 24px;
-    color: #efefef;
+/*
+ * One stylesheet, two themes, no JavaScript deciding colours.
+ *
+ * v1 hardcoded a dark palette and so painted a dark card into the middle of
+ * LeetCode's light mode. Here every colour is a custom property defined twice,
+ * the theme module puts one class on our root, and the SVG charts inherit the
+ * same properties because inline SVG is part of the document. Switching theme
+ * costs one class toggle and zero redraws.
+ *
+ * Everything is namespaced under .lca- and scoped inside .lca-panel or
+ * .lca-chip. A content script that leaks a bare `button { }` rule into
+ * leetcode.com is a bug report waiting to happen.
+ */
+
+.lca-panel {
+  --lca-bg: #ffffff;
+  --lca-card: #f7f8fa;
+  --lca-line: #e3e6ea;
+  --lca-fg: #1a1a1b;
+  --lca-dim: #6b7280;
+  --lca-accent: #f0a04b;
+  --lca-accent-2: #2f9e8f;
+  --lca-neg: #c0514d;
+
+  box-sizing: border-box;
+  width: 100%;
+  margin: 18px 0 28px;
+  padding: 18px 18px 22px;
+  border: 1px solid var(--lca-line);
+  border-radius: 12px;
+  background: var(--lca-bg);
+  color: var(--lca-fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-#lc-analytics-container h1 {
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: #f5a623; /* LeetCode Orange */
-    margin-bottom: 20px;
+.lca-panel.lca-dark,
+.lca-chip.lca-dark {
+  --lca-bg: #1a1a1a;
+  --lca-card: #262626;
+  --lca-line: #3a3a3a;
+  --lca-fg: #eff1f6;
+  --lca-dim: #9ca3af;
+  --lca-accent: #ffa116;
+  --lca-accent-2: #2cbba6;
+  --lca-neg: #ef4743;
 }
 
-/* Grid for the charts */
-#lc-analytics-charts {
-    display: grid;
-    grid-template-columns: 3fr 2fr;
-    gap: 20px;
-    align-items: flex-start;
+.lca-panel * { box-sizing: border-box; }
+
+.lca-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.lca-title { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.lca-badge {
+  padding: 1px 6px; border: 1px solid var(--lca-line); border-radius: 999px;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--lca-dim);
 }
 
-/* Individual chart card styling */
-.lc-chart-card {
-    background-color: #262626;
-    padding: 16px;
-    border-radius: 6px;
+/* Status and progress */
+.lca-status { display: flex; align-items: center; gap: 10px; padding: 10px 0; color: var(--lca-dim); }
+.lca-status-text { font-size: 12px; }
+.lca-spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--lca-line); border-top-color: var(--lca-accent);
+  animation: lca-spin 0.8s linear infinite; flex: none;
 }
+@keyframes lca-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .lca-spinner { animation: none; } }
 
-.lc-chart-card h2 {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 16px;
+.lca-progress { display: none; flex: 1; height: 3px; border-radius: 2px; background: var(--lca-line); overflow: hidden; }
+.lca-progress.is-on { display: block; }
+.lca-progress-fill { height: 100%; width: 0; background: var(--lca-accent); transition: width 0.25s ease; }
+.lca-error { margin: 0; color: var(--lca-neg); font-size: 12px; }
+
+/* Tabs */
+.lca-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--lca-line); margin-bottom: 14px; }
+.lca-tab {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  padding: 7px 12px; font: inherit; font-size: 12px; color: var(--lca-dim);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
+.lca-tab:hover { color: var(--lca-fg); }
+.lca-tab.is-on { color: var(--lca-fg); border-bottom-color: var(--lca-accent); font-weight: 600; }
 
-/* Status and summary text */
-#lc-analytics-status, #lc-analytics-summary {
-    text-align: center;
-    margin-top: 16px;
-    color: #aaa;
-    font-size: 14px;
+/* Stat tiles */
+.lca-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.lca-stat { padding: 10px 12px; border: 1px solid var(--lca-line); border-radius: 8px; background: var(--lca-card); }
+.lca-stat-value { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.lca-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--lca-dim); margin-top: 2px; }
+.lca-stat-note { font-size: 11px; color: var(--lca-dim); margin-top: 4px; }
+
+/* Cards */
+.lca-card { margin: 0 0 16px; padding: 12px 14px 14px; border: 1px solid var(--lca-line); border-radius: 10px; background: var(--lca-card); }
+.lca-card-head { margin-bottom: 10px; }
+.lca-card-title { margin: 0; font-size: 13px; font-weight: 600; }
+.lca-card-sub { margin: 3px 0 0; font-size: 11.5px; color: var(--lca-dim); }
+.lca-note { margin: 10px 0 0; font-size: 11.5px; color: var(--lca-dim); }
+.lca-note-inline { font-size: 11.5px; color: var(--lca-dim); }
+.lca-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* SVG charts */
+.lca-svg-box { width: 100%; overflow-x: auto; }
+.lca-svg { display: block; max-width: 100%; }
+.lca-bar { fill: var(--lca-accent); }
+.lca-bar-neg { fill: var(--lca-neg); }
+.lca-line { stroke: var(--lca-accent-2); stroke-width: 2; }
+.lca-dot { fill: var(--lca-accent-2); }
+.lca-trend { stroke: var(--lca-accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.lca-grid { stroke: var(--lca-line); stroke-width: 1; }
+.lca-axis { fill: var(--lca-dim); font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.lca-rowlabel { font-family: inherit; font-size: 11px; }
+.lca-value { fill: var(--lca-dim); font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.lca-marker { stroke: var(--lca-neg); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.lca-marker-label { fill: var(--lca-neg); font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.lca-cell { fill: var(--lca-accent-2); }
+.lca-cell-empty { fill: none; stroke: var(--lca-line); stroke-width: 1; }
+
+/* Recommendation and queue rows */
+.lca-reco { display: flex; flex-direction: column; }
+.lca-reco-row {
+  display: grid; grid-template-columns: 48px 1fr auto auto; gap: 10px; align-items: baseline;
+  padding: 6px 0; border-top: 1px solid var(--lca-line);
 }
+.lca-reco-row:first-child { border-top: 0; }
+.lca-reco-rating { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--lca-accent); font-variant-numeric: tabular-nums; }
+.lca-reco-title { font-size: 12.5px; }
+.lca-reco-tags, .lca-reco-slot { font-size: 11px; color: var(--lca-dim); }
+.lca-link { color: var(--lca-accent-2); text-decoration: none; }
+.lca-link:hover { text-decoration: underline; }
 
-#lc-analytics-summary strong {
-    color: #f5a623;
+.lca-target { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; color: var(--lca-dim); }
+.lca-target-value { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; color: var(--lca-fg); font-weight: 600; min-width: 42px; text-align: center; }
+.lca-btn {
+  appearance: none; cursor: pointer; font: inherit; font-size: 11.5px;
+  padding: 4px 10px; border: 1px solid var(--lca-line); border-radius: 6px;
+  background: var(--lca-bg); color: var(--lca-fg);
 }
+.lca-btn:hover { border-color: var(--lca-accent); }
 
-/* Loader animation */
-.lc-loader {
-    border: 4px solid #444;
-    border-radius: 50%;
-    border-top: 4px solid #f5a623;
-    width: 30px;
-    height: 30px;
-    animation: spin 1.5s linear infinite;
-    margin: 0 auto;
+/* Key-value block */
+.lca-kv { display: flex; flex-direction: column; gap: 5px; }
+.lca-kv-row { display: grid; grid-template-columns: 130px 1fr; gap: 10px; font-size: 12px; }
+.lca-kv-k { color: var(--lca-dim); }
+.lca-kv-v { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+
+/* The chip on a problem page */
+.lca-chip {
+  --lca-bg: #ffffff; --lca-line: #e3e6ea; --lca-fg: #1a1a1b; --lca-dim: #6b7280; --lca-accent: #f0a04b;
+  display: inline-flex; align-items: center; gap: 5px; vertical-align: middle;
+  margin-left: 8px; padding: 2px 9px; border: 1px solid var(--lca-line); border-radius: 999px;
+  background: var(--lca-bg); color: var(--lca-fg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; line-height: 1.6;
 }
+.lca-chip-rating { color: var(--lca-accent); font-weight: 700; }
+.lca-chip-sep { color: var(--lca-line); }
+.lca-chip-dim { color: var(--lca-dim); }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Inline rating in the problem list */
+.lca-inline-rating {
+  display: inline-block; margin-left: 7px; padding: 0 5px; border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px;
+  font-variant-numeric: tabular-nums; vertical-align: baseline; color: #fff;
 }
+.lca-b1 { background: #4a9d5f; }
+.lca-b2 { background: #3b82c4; }
+.lca-b3 { background: #b4851f; }
+.lca-b4 { background: #c0514d; }
+.lca-b5 { background: #7c3aed; }
 
-/* Media query for smaller screens */
-@media (max-width: 1024px) {
-    #lc-analytics-charts {
-        grid-template-columns: 1fr;
-    }
+@media (max-width: 700px) {
+  .lca-reco-row { grid-template-columns: 44px 1fr; }
+  .lca-reco-tags, .lca-reco-slot { display: none; }
+  .lca-kv-row { grid-template-columns: 1fr; gap: 0; }
 }

@@ -1,21 +1,40 @@
 {
   "manifest_version": 3,
-  "name": "Refined LeetCode Analytics",
-  "version": "1.1.12",
-  "description": "Embeds rating-based analytics directly onto LeetCode profile pages.",
+  "name": "LeetCode Rating Analytics",
+  "version": "2.0.0",
+  "description": "Community problem ratings on your LeetCode profile, every problem page and the problem list. Coverage by rating band, weak topics, and what to solve next.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  "permissions": [
+    "storage"
+  ],
+  "optional_host_permissions": [
+    "https://raw.githubusercontent.com/*"
+  ],
   "content_scripts": [
     {
       "matches": [
         "https://leetcode.com/*"
       ],
       "js": [
-        "libs/chart.min.js",
-        "content.js"
+        "src/core/ratings.js",
+        "src/core/analysis.js",
+        "src/core/svg.js",
+        "src/core/pack.js",
+        "src/core/join.js",
+        "src/core/route.js",
+        "src/platform/store.js",
+        "src/platform/data.js",
+        "src/platform/gql.js",
+        "src/platform/theme.js",
+        "src/platform/ui.js",
+        "src/surface/profile.js",
+        "src/surface/problem.js",
+        "src/surface/problemset.js",
+        "src/main.js"
       ],
       "css": [
         "styles.css"
@@ -26,11 +45,11 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": [
-    "cookies",
-    "https://leetcode.com/*"
-  ],
-  "host_permissions": [
-    "https://leetcode.com/*"
-  ]
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "LeetCode Rating Analytics"
+  }
 }

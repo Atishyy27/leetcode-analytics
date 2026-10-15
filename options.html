@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LeetCode Rating Analytics</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff; --card: #f7f8fa; --line: #e3e6ea; --fg: #1a1a1b; --dim: #6b7280; --accent: #d98324;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161617; --card: #1f1f21; --line: #343437; --fg: #eff1f6; --dim: #9ca3af; --accent: #ffa116; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 20px; background: var(--bg); color: var(--fg);
+    font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin: 0 0 28px; }
+  section { border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 16px 18px; margin-bottom: 16px; }
+  h2 { font-size: 13px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dim); }
+  label.row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
+  label.row:first-of-type { border-top: 0; }
+  label.row input { margin-top: 3px; flex: none; }
+  .what { font-weight: 500; }
+  .why { color: var(--dim); font-size: 12.5px; margin-top: 2px; }
+  .warn { border-left: 3px solid var(--accent); padding-left: 12px; margin: 10px 0 0; color: var(--dim); font-size: 12.5px; }
+  button {
+    appearance: none; cursor: pointer; font: inherit; font-size: 13px; padding: 7px 14px;
+    border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--fg);
+  }
+  button:hover { border-color: var(--accent); }
+  .row-buttons { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #msg { color: var(--dim); font-size: 12.5px; min-height: 1.4em; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>LeetCode Rating Analytics</h1>
+  <p class="sub">Version 2. Nothing here leaves your browser.</p>
+
+  <section>
+    <h2>Where it appears</h2>
+    <label class="row">
+      <input type="checkbox" id="onProfile" />
+      <span><span class="what">Profile pages</span><span class="why">The full panel: coverage by band, topic grid, what to solve next.</span></span>
+    </label>
+    <label class="row">
+      <input type="checkbox" id="onProblem" />
+      <span><span class="what">Problem pages</span><span class="why">A chip next to the difficulty showing the community rating, contest and slot.</span></span>
+    </label>
+    <label class="row">
+      <input type="checkbox" id="onProblemset" />
+      <span><span class="what">Problem list</span><span class="why">The rating inline on every row.</span></span>
+    </label>
+  </section>
+
+  <section>
+    <h2>Rating data</h2>
+    <label class="row">
+      <input type="checkbox" id="liveRatings" />
+      <span>
+        <span class="what">Refresh ratings from GitHub</span>
+        <span class="why">Off by default. The extension ships a snapshot of the community dataset and uses it with no network access at all.</span>
+      </span>
+    </label>
+    <p class="warn">
+      Turning this on asks for permission to reach <code>raw.githubusercontent.com</code> and then fetches the dataset once a week.
+      That tells GitHub your IP address and roughly when you use LeetCode. The snapshot that ships with the extension is usually
+      within a week of upstream, since ratings only change when a contest ends. Revoking the permission at your browser's
+      extensions page stops the request immediately; the permission is checked on every single call, not once at startup.
+    </p>
+  </section>
+
+  <section>
+    <h2>Cache</h2>
+    <p class="why" id="cacheInfo">Checking…</p>
+    <div class="row-buttons">
+      <button id="clear" type="button">Clear cached data</button>
+      <span id="msg"></span>
+    </div>
+    <p class="why">
+      The cache holds your problem list for 12 hours and the rating table if you enabled refresh. Clearing it forces a
+      fresh read the next time you open a profile.
+    </p>
+  </section>
+
+  <section>
+    <h2>What this extension can see</h2>
+    <p class="why">
+      It reads leetcode.com pages you open and calls the same GraphQL endpoint the site itself calls, signed in as you,
+      to ask which problems you have solved. It stores the answer on your own machine. It has no server, sends no
+      analytics, and the only outbound request it can ever make to a third party is the GitHub one above, which is off
+      unless you turn it on.
+    </p>
+  </section>
+</main>
+<script src="options.js"></script>
+</body>
+</html>
