@@ -58,6 +58,20 @@ for (const size of Object.keys(manifest.icons || {})) {
   mustExist(manifest.icons[size], `icon ${size}`);
 }
 
+// The Chrome Web Store refuses a package whose description is over 132
+// characters, with only "There was a problem uploading your file" (21 Nov 2026).
+check("manifest description fits the store's 132 characters", (manifest.description || "").length <= 132, `${(manifest.description || "").length} characters`);
+
+// Each icon must be the size its key says. v2 shipped a 1496 px file as the 128
+// icon and a 374 px file as the 16, about 700 KB for three small pictures.
+for (const size of Object.keys(manifest.icons || {})) {
+  const file = path.join(ROOT, manifest.icons[size]);
+  if (!fs.existsSync(file)) continue;
+  const b = fs.readFileSync(file);
+  const w = b.readUInt32BE(16), h = b.readUInt32BE(20);
+  check(`icon ${size} is ${size}x${size}`, w === Number(size) && h === Number(size), `${w}x${h}`);
+}
+
 // --- no orphan modules ------------------------------------------------------
 // A module written and then never listed in the manifest is dead code that
 // looks alive. Same class of mistake as a component that is never mounted.
