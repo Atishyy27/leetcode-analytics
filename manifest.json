@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LeetCode Rating Analytics",
   "version": "2.0.0",
-  "description": "Community problem ratings on your LeetCode profile, every problem page and the problem list. Coverage by rating band, weak topics, and what to solve next.",
+  "description": "Problem ratings on your LeetCode profile, problem pages and problem list: rating coverage, weak topics and what to solve next.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
