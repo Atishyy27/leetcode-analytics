@@ -163,14 +163,24 @@
   }
 }`;
 
+  /**
+   * Who is signed in, as one of three answers instead of a username-or-null.
+   * null used to cover both "nobody" and "the lookup failed", and the profile
+   * then told a signed-in person that their own page was not theirs.
+   *   { state: "user", username }   signed in
+   *   { state: "signedOut" }        LeetCode answered and nobody is signed in
+   *   { state: "error", message }   the lookup itself failed
+   */
   async function whoAmI(signal) {
     try {
       const d = await post(Q_ME, {}, "globalData", signal);
       const u = d.userStatus;
-      return u && u.isSignedIn ? u.username : null;
+      if (u && u.isSignedIn && u.username) return { state: "user", username: u.username };
+      if (u && u.isSignedIn === false) return { state: "signedOut" };
+      return { state: "error", message: "LeetCode did not say who is signed in" };
     } catch (err) {
       if (err && err.name === "AbortError") throw err;
-      return null;
+      return { state: "error", message: (err && err.message) || "the request failed" };
     }
   }
 

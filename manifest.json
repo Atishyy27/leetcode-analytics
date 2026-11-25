@@ -25,6 +25,7 @@
         "src/core/svg.js",
         "src/core/pack.js",
         "src/core/join.js",
+        "src/core/freshen.js",
         "src/core/route.js",
         "src/platform/store.js",
         "src/platform/data.js",

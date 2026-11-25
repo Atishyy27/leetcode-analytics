@@ -9,7 +9,7 @@
 // snapshot plus an opt-in refresh is strictly better on every axis except
 // freshness, and the UI prints the snapshot date so staleness is visible.
 //
-//   node tools/build-data.cjs path/to/ratings.txt
+//   node tools/build-data.cjs path/to/ratings.txt [output.tsv]
 //
 // Input columns:  Rating, ID, Title, Title ZH, Title Slug, Contest Slug, Problem Index
 // Output columns: slug, rating, id, contest, index, title
@@ -78,7 +78,7 @@ const out =
   `slug\trating\tid\tcontest\tindex\ttitle\n` +
   rows.join("\n") + "\n";
 
-const dest = path.join(__dirname, "..", "data", "ratings.tsv");
+const dest = process.argv[3] || path.join(__dirname, "..", "data", "ratings.tsv");
 fs.writeFileSync(dest, out);
 
 const before = Buffer.byteLength(text);

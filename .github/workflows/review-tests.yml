@@ -1,0 +1,39 @@
+# Tests only. Runs on pushes to review/** branches, reads the repo, and
+# publishes nothing: no store upload, no release, no tag, no deploy.
+name: review tests
+
+on:
+  push:
+    branches:
+      - "review/**"
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node test/run.cjs
+      - run: node tools/check.cjs
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node test/e2e/run.cjs shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shots
+          path: shots
+          if-no-files-found: warn
