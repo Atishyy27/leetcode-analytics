@@ -134,7 +134,7 @@ const VIEWS = [
       await pg.locator("#lca-panel .lca-tab").first().waitFor({ timeout: 20000 });
       const after = await pg.evaluate(() => window.__calls.filter((c) => c === "globalData").length);
       check(after === 5, `[${t}] one click on Retry makes one more lookup (${after})`);
-      check(/rated solves/.test(await panel(pg).innerText()), `[${t}] after Retry the panel shows your numbers`);
+      check(/rated solves/i.test(await panel(pg).innerText()), `[${t}] after Retry the panel shows your numbers`);
       await ctx.close();
     }
 
