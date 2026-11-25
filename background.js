@@ -114,6 +114,10 @@ async function ratingsText(wantLive) {
 // not say better.
 chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
 
+// Lets the test suite load convertUpstream without a browser. A service worker
+// has no `module`, so this line does nothing there.
+if (typeof module !== "undefined" && module.exports) module.exports = { convertUpstream };
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || typeof msg !== "object") return;
 

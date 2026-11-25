@@ -131,6 +131,7 @@
 
   function overviewTab(ctx) {
     const { joined, curve, crossover, summary, slots, table, universeAt, recentAdded, maybeMore } = ctx;
+    const stale = LCA.freshen.staleLine(table.snapshot, Date.now());
     const newer = recentAdded
       ? ` ${fmt(recentAdded)} newer solve${recentAdded === 1 ? "" : "s"} came from your recent submissions.` +
         (maybeMore ? " There may be more than the twenty LeetCode returns: use Re-sync now on the Data tab." : "")
@@ -165,6 +166,7 @@
       el("p", { class: "lca-note" }, [
         `${fmt(joined.unratedSolved)} of your solves are not in the rating table at all, because they never appeared in a contest. They are excluded from every number above. Rating snapshot ${table.snapshot}, ${fmt(table.count)} problems, ${table.source}. Problem list read ${ago(universeAt)}.${newer}`,
       ]),
+      stale ? el("p", { class: "lca-note lca-stale", text: stale }) : null,
     ]);
   }
 

@@ -92,7 +92,8 @@
 
     if (!info) {
       chip.appendChild(el("span", { class: "lca-chip-dim", text: "no contest rating" }));
-      chip.title = "This problem never appeared in a rated contest, so the community dataset has no rating for it.";
+      const stale = LCA.freshen.staleLine(table.snapshot, Date.now());
+      chip.title = "This problem never appeared in a rated contest, or is newer than the ratings snapshot." + (stale ? " " + stale : "");
     } else {
       chip.appendChild(el("strong", { class: "lca-chip-rating", text: String(info.rating) }));
       chip.appendChild(el("span", { class: "lca-chip-sep", text: "·" }));
@@ -104,7 +105,8 @@
         chip.appendChild(el("span", { class: "lca-chip-sep", text: "·" }));
         chip.appendChild(el("span", { class: "lca-chip-dim", text: note }));
       }
-      chip.title = `Community rating ${info.rating}, from the ${prettyContest(info.contest)} ${info.index} slot. Snapshot ${table.snapshot}.`;
+      const stale = LCA.freshen.staleLine(table.snapshot, Date.now());
+      chip.title = `Community rating ${info.rating}, from the ${prettyContest(info.contest)} ${info.index} slot. Snapshot ${table.snapshot}.` + (stale ? " " + stale : "");
     }
 
     const host = found.node;

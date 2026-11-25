@@ -6,6 +6,9 @@
  * already say which of those problems are now done, so they are laid over the
  * cached list in memory. The cache itself is not rewritten, so its age stays
  * the age of the full read.
+ *
+ * staleLine: the rating table is a snapshot and the dataset changes weekly,
+ * so when the snapshot is old the panel says so.
  */
 (function (root, factory) {
   const api = factory();
@@ -15,6 +18,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : self, function () {
   "use strict";
 
+  const STALE_DAYS = 21;
   const RECENT_LIMIT = 20;
 
   /**
@@ -44,5 +48,18 @@
     return { rows: added ? out : rows, added: added, maybeMore: added >= RECENT_LIMIT };
   }
 
-  return { applyRecent, RECENT_LIMIT };
+  function snapshotAgeDays(snapshot, nowMs) {
+    const t = Date.parse(snapshot);
+    if (!Number.isFinite(t)) return null;
+    return Math.floor((nowMs - t) / 86400000);
+  }
+
+  /** One sentence when the ratings are old, null when they are not. */
+  function staleLine(snapshot, nowMs) {
+    const days = snapshotAgeDays(snapshot, nowMs);
+    if (days === null || days <= STALE_DAYS) return null;
+    return `Ratings are ${days} days old, so problems from newer contests may show no rating. Click the extension icon and turn on weekly refresh.`;
+  }
+
+  return { applyRecent, snapshotAgeDays, staleLine, STALE_DAYS, RECENT_LIMIT };
 });
