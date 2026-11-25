@@ -90,9 +90,21 @@
         bar.style.width = total ? Math.round((done / total) * 100) + "%" : "0%";
       },
       done: () => status.remove(),
-      fail: (msg) => {
+      fail: (msg, onRetry) => {
         status.textContent = "";
         status.appendChild(el("p", { class: "lca-error", text: msg }));
+        if (onRetry) {
+          const btn = el("button", {
+            class: "lca-btn",
+            type: "button",
+            text: "Retry",
+            onclick: () => {
+              btn.disabled = true;
+              onRetry();
+            },
+          });
+          status.appendChild(btn);
+        }
       },
     };
   }
@@ -352,10 +364,11 @@
 
   /** Someone else's profile: say plainly how little is knowable. */
   function foreignView(ctx) {
+    const why = ctx.signedOut
+      ? `You are not signed in to LeetCode. Sign in to see your own coverage, topics and what to solve next. Without that, LeetCode only returns an account's twenty most recent accepted submissions. What follows is those solves, rated.`
+      : `This is not your profile. LeetCode will only return another account's twenty most recent accepted submissions, so coverage, topics and recommendations are not computable here. What follows is those solves, rated.`;
     return el("div", {}, [
-      el("p", { class: "lca-note" }, [
-        `This is not your profile. LeetCode will only return another account's twenty most recent accepted submissions, so coverage, topics and recommendations are not computable here. What follows is those solves, rated.`,
-      ]),
+      el("p", { class: "lca-note" }, [why]),
       recentTab(ctx),
       ctx.contest ? contestTab(ctx) : null,
     ]);
@@ -386,7 +399,12 @@
         const table = await LCA.data.load();
 
         ui.say("Checking who you are signed in as");
-        const me = await LCA.gql.whoAmI(signal);
+        const who = await LCA.gql.whoAmI(signal);
+        if (who.state === "error") {
+          ui.fail(`Could not check who is signed in to LeetCode (${who.message}). Your coverage is not shown until that works.`, () => run(username, signal));
+          return;
+        }
+        const me = who.state === "user" ? who.username : null;
         const own = !!me && me.toLowerCase() === username.toLowerCase();
 
         const recentRaw = await withCache("recent:" + username, RECENT_TTL, () => LCA.gql.fetchRecent(username, 20, signal), force);
@@ -395,7 +413,7 @@
 
         if (!own) {
           ui.done();
-          ui.body.appendChild(foreignView({ recent: recent, contest: contest, summary: null, crossover: null, table: table }));
+          ui.body.appendChild(foreignView({ recent: recent, contest: contest, summary: null, crossover: null, table: table, signedOut: who.state === "signedOut" }));
           return;
         }
 
