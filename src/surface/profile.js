@@ -130,7 +130,11 @@
   }
 
   function overviewTab(ctx) {
-    const { joined, curve, crossover, summary, slots, table, universeAt } = ctx;
+    const { joined, curve, crossover, summary, slots, table, universeAt, recentAdded, maybeMore } = ctx;
+    const newer = recentAdded
+      ? ` ${fmt(recentAdded)} newer solve${recentAdded === 1 ? "" : "s"} came from your recent submissions.` +
+        (maybeMore ? " There may be more than the twenty LeetCode returns: use Re-sync now on the Data tab." : "")
+      : "";
 
     const tiles = el("div", { class: "lca-stats" }, [
       stat("rated solves", fmt(joined.ratedSolved), `of ${fmt(joined.ratedTotal)} rated problems`),
@@ -159,7 +163,7 @@
         svgBox(LCA.svg.hbars(slotBars, { labelW: 48, width: 560 }))
       ),
       el("p", { class: "lca-note" }, [
-        `${fmt(joined.unratedSolved)} of your solves are not in the rating table at all, because they never appeared in a contest. They are excluded from every number above. Rating snapshot ${table.snapshot}, ${fmt(table.count)} problems, ${table.source}. Problem list read ${ago(universeAt)}.`,
+        `${fmt(joined.unratedSolved)} of your solves are not in the rating table at all, because they never appeared in a contest. They are excluded from every number above. Rating snapshot ${table.snapshot}, ${fmt(table.count)} problems, ${table.source}. Problem list read ${ago(universeAt)}.${newer}`,
       ]),
     ]);
   }
@@ -407,7 +411,11 @@
         const me = who.state === "user" ? who.username : null;
         const own = !!me && me.toLowerCase() === username.toLowerCase();
 
-        const recentRaw = await withCache("recent:" + username, RECENT_TTL, () => LCA.gql.fetchRecent(username, 20, signal), force);
+        // On your own profile the recent list is also what keeps the cached
+        // problem list current, so it is read every time (one request).
+        const recentRaw = own
+          ? await LCA.gql.fetchRecent(username, 20, signal)
+          : await withCache("recent:" + username, RECENT_TTL, () => LCA.gql.fetchRecent(username, 20, signal), force);
         const recent = LCA.join.fromRecent(recentRaw || [], table.bySlug);
         const contest = await withCache("contest:" + username, CONTEST_TTL, () => LCA.gql.fetchContest(username, signal), force);
 
@@ -418,7 +426,8 @@
         }
 
         const uni = await cachedUniverse(me, ui, signal, force);
-        const joined = LCA.join.build(uni.rows, table.bySlug);
+        const layered = LCA.freshen.applyRecent(uni.rows, recentRaw);
+        const joined = LCA.join.build(layered.rows, table.bySlug);
         const universe = joined.universe;
 
         const solvedRatings = universe.filter((p) => p.solved).map((p) => p.rating);
@@ -450,6 +459,8 @@
           contest: contest,
           table: table,
           universeAt: uni.at,
+          recentAdded: layered.added,
+          maybeMore: layered.maybeMore,
           settings: settings,
         };
 
